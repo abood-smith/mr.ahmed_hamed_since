@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حل الامتحان</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+        header {
+            background-color: #4CAF50;
+            padding: 20px;
+            color: white;
+            font-size: 24px;
+        }
+        main {
+            padding: 20px;
+        }
+        .question {
+            margin-bottom: 20px;
+            background-color: #f8f8f8;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: left;
+        }
+        .question h3 {
+            margin: 0;
+        }
+        .options {
+            margin-top: 10px;
+        }
+        .options label {
+            display: block;
+            margin: 5px 0;
+        }
+        button {
+            padding: 10px 20px;
+            margin-top: 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <header>حل الامتحان</header>
+    <main>
+        <div id="examContainer"></div>
+        <button onclick="submitExam()">إرسال الإجابات</button>
+        <div id="result" style="margin-top: 20px; font-size: 20px;"></div>
+    </main>
+    <script>
+        const exam = JSON.parse(localStorage.getItem('currentExam'));
+        const userAnswers = [];
+
+        function renderExam() {
+            const examContainer = document.getElementById('examContainer');
+            examContainer.innerHTML = `<h2>${exam.title}</h2>`;
+            exam.questions.forEach((question, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.classList.add('question');
+                questionDiv.innerHTML = `
+                    <h3>س${index + 1}: ${question.text}</h3>
+                    <div class="options">
+                        ${question.options.map((option, i) => `
+                            <label>
+                                <input type="radio" name="question${index}" value="${i + 1}">
+                                ${option}
+                            </label>
+                        `).join('')}
+                    </div>
+                `;
+                examContainer.appendChild(questionDiv);
+            });
+        }
+
+        function submitExam() {
+            const totalQuestions = exam.questions.length;
+            let score = 0;
+
+            // Collect user answers
+            exam.questions.forEach((question, index) => {
+                const selectedOption = document.querySelector(`input[name="question${index}"]:checked`);
+                if (selectedOption) {
+                    userAnswers[index] = parseInt(selectedOption.value, 10);
+                    if (userAnswers[index] === parseInt(question.correct, 10)) {
+                        score++;
+                    }
+                }
+            });
+
+            // Display result
+            const resultDiv = document.getElementById('result');
+            if (userAnswers.length === totalQuestions) {
+                resultDiv.innerHTML = `لقد حصلت على <strong>${score}</strong> من <strong>${totalQuestions}</strong>`;
+            } else {
+                resultDiv.innerHTML = `يرجى الإجابة على جميع الأسئلة قبل الإرسال.`;
+            }
+        }
+
+        renderExam();
+    </script>
+</body>
+</html>

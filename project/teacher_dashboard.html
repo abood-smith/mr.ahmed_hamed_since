@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم المعلم</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #4CAF50;
+            padding: 20px;
+            color: white;
+            text-align: center;
+            font-size: 24px;
+        }
+        main {
+            padding: 20px;
+        }
+        input, textarea, button, select {
+            display: block;
+            margin: 10px auto;
+            padding: 10px;
+            width: 80%;
+            max-width: 400px;
+            font-size: 16px;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            background-color: #f8f8f8;
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .exam-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .delete-btn {
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        .delete-btn:hover {
+            background-color: darkred;
+        }
+    </style>
+</head>
+<body>
+    <header>لوحة تحكم المعلم</header>
+    <main>
+        <h2>إضافة امتحان</h2>
+        <input type="text" id="examTitle" placeholder="عنوان الامتحان" required>
+        <h3>إضافة سؤال</h3>
+        <textarea id="questionText" placeholder="نص السؤال" required></textarea>
+        <input type="text" id="option1" placeholder="الخيار الأول" required>
+        <input type="text" id="option2" placeholder="الخيار الثاني" required>
+        <input type="text" id="option3" placeholder="الخيار الثالث" required>
+        <input type="text" id="option4" placeholder="الخيار الرابع" required>
+        <select id="correctOption">
+            <option value="1">الخيار الأول (صحيح)</option>
+            <option value="2">الخيار الثاني (صحيح)</option>
+            <option value="3">الخيار الثالث (صحيح)</option>
+            <option value="4">الخيار الرابع (صحيح)</option>
+        </select>
+        <button onclick="addQuestion()">إضافة السؤال</button>
+        <h3>الأسئلة المضافة</h3>
+        <ul id="questionList"></ul>
+        <button onclick="saveExam()">رفع الامتحان</button>
+
+        <h3>الامتحانات السابقة</h3>
+        <ul id="examList"></ul>
+    </main>
+    <script>
+        let questions = [];
+        let exams = JSON.parse(localStorage.getItem('exams')) || [];
+
+        function addQuestion() {
+            const questionText = document.getElementById('questionText').value;
+            const option1 = document.getElementById('option1').value;
+            const option2 = document.getElementById('option2').value;
+            const option3 = document.getElementById('option3').value;
+            const option4 = document.getElementById('option4').value;
+            const correctOption = document.getElementById('correctOption').value;
+
+            if (questionText && option1 && option2 && option3 && option4) {
+                const question = {
+                    text: questionText,
+                    options: [option1, option2, option3, option4],
+                    correct: correctOption
+                };
+                questions.push(question);
+                renderQuestions();
+                clearInputs();
+            }
+        }
+
+        function renderQuestions() {
+            const questionList = document.getElementById('questionList');
+            questionList.innerHTML = '';
+            questions.forEach((question, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `  
+                    <strong>س${index + 1}: ${question.text}</strong><br>
+                    1. ${question.options[0]}<br>
+                    2. ${question.options[1]}<br>
+                    3. ${question.options[2]}<br>
+                    4. ${question.options[3]}<br>
+                    <small>الإجابة الصحيحة: ${question.options[question.correct - 1]}</small>
+                `;
+                questionList.appendChild(li);
+            });
+        }
+
+        function clearInputs() {
+            document.getElementById('questionText').value = '';
+            document.getElementById('option1').value = '';
+            document.getElementById('option2').value = '';
+            document.getElementById('option3').value = '';
+            document.getElementById('option4').value = '';
+            document.getElementById('correctOption').value = '1';
+        }
+
+        function saveExam() {
+            const examTitle = document.getElementById('examTitle').value;
+            if (examTitle && questions.length > 0) {
+                exams.push({ title: examTitle, questions });
+                localStorage.setItem('exams', JSON.stringify(exams));
+                alert('تم رفع الامتحان بنجاح!');
+                questions = [];
+                renderQuestions();
+                document.getElementById('examTitle').value = '';
+                renderExams();
+            } else {
+                alert('يرجى إدخال عنوان الامتحان وإضافة الأسئلة.');
+            }
+        }
+
+        function renderExams() {
+            const examList = document.getElementById('examList');
+            examList.innerHTML = '';
+            exams.forEach((exam, index) => {
+                const li = document.createElement('li');
+                li.className = 'exam-item';
+                li.innerHTML = `
+                    <span>${exam.title}</span>
+                    <button class="delete-btn" onclick="deleteExam(${index})">حذف</button>
+                `;
+                examList.appendChild(li);
+            });
+        }
+
+        function deleteExam(index) {
+            exams.splice(index, 1);
+            localStorage.setItem('exams', JSON.stringify(exams));
+            renderExams();
+        }
+
+        // عرض الامتحانات المحفوظة عند تحميل الصفحة
+        renderExams();
+    </script>
+</body>
+</html>
